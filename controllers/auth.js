@@ -13,6 +13,7 @@ const register = async (req, res) => {
       password,
       phone,
       invitationCode,
+      totalInvest,
       totalWithdrawal
     } = req.body;
 
