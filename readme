@@ -1,0 +1,17 @@
+
+
+{
+  "firstName": "John newddd",
+  "lastName": "Dovvvve",
+  "email": "newe@edd.com",
+  "emailOrUsername": "newdd@e.com",
+  "userName": "dbrhrjjdddddlllellkk",
+  "password": "newPassword",
+  "phone": "1234567890",
+  "balance": 1000.00,
+  "referralCounts": 2,
+  "investmentType": "gold",
+  "profit": 50.00,
+  "oldPassword": "password123",
+  "newPassword": "newPassword"
+}
