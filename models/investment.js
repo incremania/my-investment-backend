@@ -21,6 +21,15 @@ const investmentSchema = new Schema({
         },
         default: "pending",
     },
+    returnInterest: {
+        type: Number,
+        required: true
+    },
+    upcomingPayment: {
+    type: Number,
+    required: true,
+    default: 0
+    }, 
     user: {
         type: mongoose.Types.ObjectId,
         ref: 'User'

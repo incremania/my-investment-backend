@@ -30,8 +30,8 @@ const getAllInvitationCode = async(req, res) => {
 const getSingleUser = async (req, res) => {
   try {
  
-    const { userId } = req.params;
-    const user = await User.findById(userId);
+   
+    const user = await User.findById({ _id: req.user.userId});
     authorizePermissions(req.user, user._id)
     
     if (!user) {
@@ -69,15 +69,35 @@ const getAllUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
-    const { firstName, lastName, email, userName, phone } = req.body;
+    const { firstname, lastname, email, username, phone, address } = req.body;
     const userId = req.user.userId;
     const updatedUser = await User.findOne({ _id: userId });
     authorizePermissions(req.user, updateUser._id);
-    updatedUser.firstName = firstName;
-    updatedUser.lastName = lastName;
-    updatedUser.email = email;
-    updatedUser.userName = userName;
-    updatedUser.phone = phone;
+    
+    // Update user fields based on the provided data
+    switch (true) {
+      case firstname !== undefined:
+        updatedUser.firstname = firstname;
+        break;
+      case lastname !== undefined:
+        updatedUser.lastname = lastname;
+        break;
+      case email !== undefined:
+        updatedUser.email = email;
+        break;
+      case username !== undefined:
+        updatedUser.username = username;
+        break;
+      case phone !== undefined:
+        updatedUser.phone = phone;
+        break;
+      case address !== undefined:
+        updatedUser.address = address;
+        break;
+      default:
+        // No valid field provided for update
+        return res.status(400).json({ error: 'No valid fields provided for update' });
+    }
 
     await updatedUser.save();
 

@@ -1,37 +1,63 @@
 const Transaction = require("../models/TransactionModel");
-const User = require('../models/UserModel')
+const User = require('../models/UserModel');
 const uuid = require("uuid").v4;
-const authorizePermissions = require("../utils/authorizePermission");
+const cloudinary = require('cloudinary').v2;
+
 const createTransaction = async (req, res) => {
   try {
-    const { amount, operationType, status, gateway } = req.body;
+    const { amount, operationType, status, gateway, paymentId } = req.body;
+    console.log(req.files);
+
+      if (!req.files || !req.files.image) {
+            return res.status(400).json({ error: 'Please provide a valid image for upload.' });
+        }
+      
+        const proofImage = req.files.image;
+
+        // Check for MIME type
+        const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        if (!allowedMimeTypes.includes(proofImage.mimetype)) {
+            return res.status(400).json({ error: 'Only JPEG, PNG, and GIF images are allowed.' });
+        }
+
+    
+    // Upload image to Cloudinary
+    const imageResult = await cloudinary.uploader.upload(req.files.image.tempFilePath, {
+      use_filename: true,
+      folder: 'cryptobase_transaction_images'
+    });
+
+
+    // Create transaction with image URL
     const transaction = await Transaction.create({
       amount,
       user: req.user.userId,
       operationType,
       status,
       gateway,
+      paymentId,
       transactionId: uuid().substring(1, 12),
+      image: imageResult.secure_url
     });
-    const user = await User.findOne({_id: req.user.userId})
-    console.log(user);
-
-   
-    //  if(transaction) {
-    //    user.balance += transaction.amount
-    //     await user.save()
-    //     }
 
     res.status(201).json({
       status: "success",
-      message: "transaction created successfully",
+      message: "Transaction created successfully",
       transactionDetails: transaction,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 };
+
+
+
+
+
+
+
+
 
 const getSingleTransaction = async (req, res) => {
   try {

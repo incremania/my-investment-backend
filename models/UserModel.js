@@ -50,6 +50,10 @@ const UserSchema = new Schema(
       type: String,
       required: [true, 'please provide a valid invitation code']
     },
+    address: {
+      type: String,
+      default: ''
+    },
     // referedBy: {
     //     type: String,
     // },

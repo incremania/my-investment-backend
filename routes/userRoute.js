@@ -9,6 +9,12 @@ const {
   createInvitationCode,
   getAllInvitationCode
 } = require("../controllers/userController");
+
+const {
+  proofUpload,
+  getAllProof
+} = require('../controllers/proofImage')
+
 const {
   authenticateUser,
   authorizePermissions,
@@ -19,20 +25,22 @@ router
   .get("/show-current-user", authenticateUser, showCurrentUser)
   .post('/invitation', authenticateUser, authorizePermissions("admin"), createInvitationCode)
   .get("/invitations", authenticateUser,  authorizePermissions("admin"), getAllInvitationCode)
+  .get('/image', authenticateUser, authorizePermissions('admin'), getAllProof)
+  .post('/image', authenticateUser, authorizePermissions('user', 'admin'), proofUpload)
   .patch(
     "/update-user",
     authenticateUser,
     authorizePermissions("user", "admin"),
     updateUser
   )
-  .patch(
+  .post(
     "/update-password",
     authenticateUser,
-    authorizePermissions("user"),
+    authorizePermissions("user", "admin"),
     updatePassword
   )
   .get(
-    "/user/:userId",
+    "/user",
     authenticateUser,
     authorizePermissions("user", "admin"),
     getSingleUser

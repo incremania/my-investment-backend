@@ -41,6 +41,13 @@ const TransactionSchema = new Schema(
       unique: true,
       required: true,
     },
+    paymentId: {
+      type: String
+    },
+    image: {
+      type: String,
+      required: true
+    },
   },
   { timestamps: true }
 );
