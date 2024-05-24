@@ -21,7 +21,7 @@ const {
 } = require("../middleware/authentication");
 
 router
-  .get("/users", getAllUser)
+  .get("/users", authenticateUser, authorizePermissions('admin'), getAllUser)
   .get("/show-current-user", authenticateUser, showCurrentUser)
   .post('/invitation', authenticateUser, authorizePermissions("admin"), createInvitationCode)
   .get("/invitations", authenticateUser,  authorizePermissions("admin"), getAllInvitationCode)
