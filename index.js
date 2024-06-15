@@ -41,6 +41,8 @@ app.use('/withdrawal', withdrawalRoute)
 app.use(profileImageRoute)
 app.use('/ticket', ticketRoute)
 
+app.get('/', (req, res) => res.send('hello world from cOdE mAnIa'))
+
 app.use(appNotFound);
 
 // db connection
