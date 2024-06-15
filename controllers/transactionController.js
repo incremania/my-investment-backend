@@ -1,43 +1,37 @@
 const Transaction = require("../models/TransactionModel");
 const User = require('../models/UserModel');
 const uuid = require("uuid").v4;
-const cloudinary = require('cloudinary').v2;
+
 
 const createTransaction = async (req, res) => {
   try {
-    const { amount, operationType, status, gateway, paymentId } = req.body;
-    console.log(req.files);
+    console.log(req.user);
+    const user = await User.findById(req.user.userId)
+    const { amount, operationType, status, paymentMethod} = req.body;
+ 
+    if(!paymentMethod) {
+      return res.status(400).json({ error: "Payment method is required" });
+    }
 
-      if (!req.files || !req.files.image) {
-            return res.status(400).json({ error: 'Please provide a valid image for upload.' });
-        }
+      if(operationType === 'withdrawal' && user.balance < amount) {
+        return res.status(400).json({ error: 'insufficient funds'})
+      }
+
       
-        const proofImage = req.files.image;
+      if(amount == 0) {
+         return res.status(400).json({ error: 'invalid amount'})
 
-        // Check for MIME type
-        const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        if (!allowedMimeTypes.includes(proofImage.mimetype)) {
-            return res.status(400).json({ error: 'Only JPEG, PNG, and GIF images are allowed.' });
-        }
-
-    
-    // Upload image to Cloudinary
-    const imageResult = await cloudinary.uploader.upload(req.files.image.tempFilePath, {
-      use_filename: true,
-      folder: 'cryptobase_transaction_images'
-    });
-
-
-    // Create transaction with image URL
+      }
     const transaction = await Transaction.create({
       amount,
-      user: req.user.userId,
+      user: user._id,
       operationType,
       status,
-      gateway,
-      paymentId,
+      paymentMethod,
+      firstname: user.firstname,
+      email:user.email,
+      accountId: user.accountId,
       transactionId: uuid().substring(1, 12),
-      image: imageResult.secure_url
     });
 
     res.status(201).json({
@@ -46,18 +40,10 @@ const createTransaction = async (req, res) => {
       transactionDetails: transaction,
     });
   } catch (error) {
-    console.error(error);
+    console.log(error)
     res.status(500).json({ error: error.message });
   }
 };
-
-
-
-
-
-
-
-
 
 const getSingleTransaction = async (req, res) => {
   try {
@@ -131,6 +117,8 @@ const getAllTransactions = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
 const updateTransaction = async (req, res) => {
   try {
     const { transactionId } = req.params;
@@ -139,7 +127,6 @@ const updateTransaction = async (req, res) => {
 
     // Find the transaction by ID
     const transaction = await Transaction.findById(transactionId);
-    console.log(transaction);
     if (!transaction) {
       return res.status(404).json({ status: "error", message: "Transaction not found" });
     }
@@ -147,9 +134,8 @@ const updateTransaction = async (req, res) => {
     // Update the transaction status and createdAt fields
     transaction.status = status;
  
-
     // If the transaction status is 'successful', update the user's balance
-    if (status === 'successful') {
+    if (status === 'successful' && transaction.operationType === 'deposit') {
       const user = await User.findById(transaction.user);
       if (user) {
         user.balance += transaction.amount;
@@ -159,13 +145,24 @@ const updateTransaction = async (req, res) => {
       }
     }
 
-    // Save the updated transaction
+    if(status === 'successful' && transaction.operationType === 'withdrawal') {
+      const user = await User.findById(transaction.user)
+      if(user) {
+        user.balance -= transaction.amount
+        await user.save()
+      } else {
+        return res.status(404).json({ status: "error", message: "User not found" });
+
+      }
+    }
+
+
+
     await transaction.save();
 
-    // Send a success response
     res.status(200).json({ status: "success", transactionDetails: transaction });
   } catch (error) {
-    // Log the error and send an error response
+  
     console.error(error);
     res.status(500).json({ status: "error", message: error.message });
   }
@@ -199,7 +196,6 @@ const addFunds = async(req, res) => {
    try {
         const { amount, gateway } = req.body;
 
-        // Perform any necessary validation on amount and gateway
         if (!amount || isNaN(amount) || amount <= 0) {
             return res.status(400).json({ error: 'Invalid amount' });
         }
@@ -207,10 +203,9 @@ const addFunds = async(req, res) => {
             return res.status(400).json({ error: 'Gateway is required' });
         }
 
-        // Process the request and generate response
         const transaction = await Transaction.create({
             amount,
-            user: req.user.userId, // Assuming you have user information in the request
+            user: req.user.userId, 
             operationType: 'add-fund',
             status: 'pending',
             transactionId: uuid(),
@@ -221,8 +216,8 @@ const addFunds = async(req, res) => {
         const response = {
             amount,
             gateway,
-            charge: 10, // Example charge
-            payable: parseFloat(amount) + 10 // Example payable amount
+            charge: 10, 
+            payable: parseFloat(amount) + 10 
         };
 
         // Send the response

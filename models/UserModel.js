@@ -21,18 +21,17 @@ const UserSchema = new Schema(
       validate: [isEmail, "enter a valid email"],
       trim: true,
       lowercase: true,
-    },
-    username: {
-      type: String,
-      reuired: [true, "please provide a username"],
-      
-    },
+    },  
     password: {
       type: String,
       required: [true, "Password is required"],
       minlength: [8, "password must be greater than 8 characters"],
     },
-
+    country: {
+      type: String,
+      required: [true, 'country is required']
+    },
+    
     phone: {
       type: String,
       required: [true, "please provide a phone number"],
@@ -46,14 +45,19 @@ const UserSchema = new Schema(
       type: Number,
       default: 0
     },
-    invitationCode: {
+    accountId: {
       type: String,
-      required: [true, 'please provide a valid invitation code']
+      required: true
     },
-    address: {
-      type: String,
-      default: ''
-    },
+
+    // invitationCode: {
+    //   type: String,
+    //   required: [true, 'please provide a valid invitation code']
+    // },
+    // address: {
+    //   type: String,
+    //   default: ''
+    // },
     // referedBy: {
     //     type: String,
     // },
@@ -62,10 +66,10 @@ const UserSchema = new Schema(
     //   required: true,
     //   unique: true,
     // },
-    // referralCounts: {
-    //   type: Number,
-    //   default: 0,
-    // },
+    referralCounts: {
+      type: Number,
+      default: 0,
+    },
     // investmentType: {
     //   type: String,
     //   enum: {
@@ -74,6 +78,14 @@ const UserSchema = new Schema(
     //   },
     //   default: "gold",
     // },
+    plan: {
+      type: String,
+      enum: {
+        values: ['Basic', 'Platinum', 'Silver', 'Gold', 'Regular', 'N/A'],
+        message: '{VALUE} is not supported'
+      },
+      default: 'N/A'
+    },
     role: {
       type: String,
       enum: {
@@ -84,7 +96,7 @@ const UserSchema = new Schema(
     },
     profit: {
       type: Number,
-      default: 0.0,
+      default: 0,
     },
     totalInvest: {
       type: Number,

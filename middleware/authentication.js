@@ -41,25 +41,17 @@ const { isTokenValid } = require("../utils/token");
 
 const authenticateUser = async (req, res, next) => {
   const authHeader = req.headers.authorization;
-
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     console.log("No auth header or invalid format");
     return res.status(401).json({ error: "Authentication token missing or invalid" });
   }
 
-  const token = authHeader.split(" ")[1]; // Extract the token from the Authorization header
+  const token = authHeader.split(" ")[1];
 
   try {
-   
-
-    // Verify the token
     const decodedToken = isTokenValid({ token });
-   
-
-    // Extract user information from the decoded token
     const { firstName, lastName, userId, role } = decodedToken.user;
     
-
     // Set req.user with the extracted user information
     req.user = { firstName, lastName, userId, role };
    

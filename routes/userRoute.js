@@ -7,7 +7,8 @@ const {
   getAllUser,
   showCurrentUser,
   createInvitationCode,
-  getAllInvitationCode
+  getAllInvitationCode,
+  updatePlan
 } = require("../controllers/userController");
 
 const {
@@ -33,6 +34,7 @@ router
     authorizePermissions("user", "admin"),
     updateUser
   )
+  .patch('/plan', authenticateUser, authorizePermissions('user', 'admin'), updatePlan )
   .post(
     "/update-password",
     authenticateUser,

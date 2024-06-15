@@ -19,7 +19,6 @@ const createTransfer = async (req, res) => {
         if(amount < 1) {
               return res.status(400).json({ msg: 'Transfer must be more than $0' });
         } 
-
         if(user.balance < amount) {
             return res.status(400).json({ msg: 'Insufficient balance!' });
         }

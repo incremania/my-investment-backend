@@ -11,6 +11,14 @@ const TransactionSchema = new Schema(
       type: Number,
       required: true,
     },
+    firstname: {
+      type: String,
+      required: true
+    },
+    email: {
+      type: String,
+      required: true
+    },
     operationType: {
       type: String,
       enum: {
@@ -20,6 +28,10 @@ const TransactionSchema = new Schema(
       default: "deposit",
       required: true,
     },
+    accountId : {
+      type: String,
+      required: true
+    },
     status: {
       type: String,
       enum: {
@@ -28,10 +40,13 @@ const TransactionSchema = new Schema(
       },
       default: "pending",
     },
-    gateway: {
+    paymentMethod: {
       type: String,
       enum: {
-        values: ["Bitcoin", "Ethereum", "USDT (ERC20)", "SHIBA"],
+      values: ["bitcoin", "ethereum", "ripple", "litecoin", "bitcoin-cash", "cardano", "usdt",
+         "polkadot", "chainlink", "stellar", "binance-coin",
+          "tether", "dogecoin", "vechain", "solana", "eos", "cosmos", "monero",
+           "tezos", "tron", "iota", "neo", "avalanche", "algorand"],
         message: "{VALUE} is not supported",
       },
       required: true
@@ -41,13 +56,7 @@ const TransactionSchema = new Schema(
       unique: true,
       required: true,
     },
-    paymentId: {
-      type: String
-    },
-    image: {
-      type: String,
-      required: true
-    },
+
   },
   { timestamps: true }
 );

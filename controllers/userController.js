@@ -3,6 +3,7 @@ const { attachCookiesToResponse } = require("../utils/token");
 const createTokenUser = require("../utils/createTokenUser");
 const authorizePermissions = require('../utils/authorizePermission')
 const InvitationCode = require('../models/invitation');
+const cron = require("node-cron");
 
 
 const createInvitationCode = async (req, res) => {
@@ -151,6 +152,47 @@ const updatePassword = async (req, res) => {
   }
 };
 
+
+
+const updatePlan = async (req, res) => {
+  try {
+    const user = await User.findOne({ _id: req.user.userId });
+    if (!user) {
+      return res.status(400).json({ error: "no user found" });
+    }
+
+    if (!req.body.plan) {
+      return res.status(400).json({ error: "plan is required" });
+    }
+
+   
+    user.plan = req.body.plan;
+    user.totalInvest = user.balance
+    
+
+    await user.save();
+    res.status(200).json({
+      status: "success",
+      message: "plan updated successfully",
+      user
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// const calculateProfit = async (req, res) => {
+//   try {
+//     const user = 
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
+
+
+
+
 const showCurrentUser = async (req, res) => {
     console.log(req.token);
   res.status(200).json({ status: "success", user: req.user });
@@ -162,6 +204,65 @@ module.exports = {
   getSingleUser,
   getAllUser,
   showCurrentUser,
+  updatePlan,
   createInvitationCode,
   getAllInvitationCode
 };
+
+
+
+const calculateProfit = (user) => {
+  // Calculate profit based on user's plan and total investment
+  let roiPercent;
+  switch (user.plan.toLowerCase()) {
+    case "basic":
+      roiPercent = 7;
+      break;
+    case "regular":
+      roiPercent = 10;
+      break;
+    case "silver":
+      roiPercent = 12;
+      break;
+    case "gold":
+      roiPercent = 14;
+      break;
+    default:
+      // Handle invalid plan
+      return;
+  }
+
+  const initialInvestment = user.totalInvest || 0; // Assuming user has a totalInvest property
+  const dailyProfit = (initialInvestment * roiPercent) / 100;
+
+  // Update user's profit
+  user.profit += dailyProfit;
+};
+
+
+
+// Function to update profit for all users with active plans
+const updateAllUserProfits = async () => {
+  try {
+    const users = await User.find({ plan: { $ne: "N/A" } }); 
+
+    users.forEach(async (user) => {
+
+      calculateProfit(user);
+      // user.balance = user.balance + user.profit
+      await user.save(); 
+    });
+
+  } catch (error) {
+    console.error("Error updating user profits:", error);
+  }
+};
+
+updateAllUserProfits()
+
+// Schedule the task to run every 24 hours
+
+
+cron.schedule('0 0 * * *', () => {
+  console.log('running a task every day');
+});
